@@ -99,7 +99,7 @@ fun ListView(
 
     return LazyColumn {
         list.value.map { todo ->
-            item("${todo.parent.id} ${todo.lastModifiedTime}") {
+            item("${todo.parent.invoke().id} ${todo.lastModifiedTime}") {
                 TodoItem(
                     item = todo
                 ) { todo ->
@@ -143,15 +143,17 @@ fun TodoItem(
         keyboardController?.hide()
     }
 ) {
+    val todoData = item.parent.invoke()
+
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
         Text(
-            text = item.parent.title,
+            text = todoData.title,
             style = MaterialTheme.typography.titleLarge
         )
         Text(
-            text = item.parent.detail
+            text = todoData.detail
         )
     }
 }

@@ -71,7 +71,7 @@ class MainViewModel : ViewModel() {
                  */
                 .map {
                     TodoDisplay(
-                        parent = it,
+                        parent = { it },
                         selected = false, // selected is false by default
                         lastModifiedTime = System.currentTimeMillis()
                     )
@@ -81,7 +81,7 @@ class MainViewModel : ViewModel() {
                  * if selected item id == current item id, set selected to true
                  * **/
                 .map {
-                    if (it.parent.id == selected?.parent?.id)
+                    if (it.parent.invoke().id == selected?.parent?.invoke()?.id)
                         it.copy(
                             selected = true
                         )
