@@ -47,7 +47,7 @@ class MainViewModel : ViewModel() {
         /** real state **/
         val state = MutableStateFlow(listOf<TodoDisplay>())
 
-        /** automation function **/
+        /** state logic **/
         suspend fun updateState() {
 
             val selected = selectedItem.first()
