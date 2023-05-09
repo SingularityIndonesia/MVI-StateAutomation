@@ -137,7 +137,7 @@ fun ListView(
 
     return LazyColumn {
         list.value.map { todo ->
-            item("${todo.parent.invoke().id} ${todo.lastModifiedTime}") {
+            item(todo.parent.invoke().id) {
                 TodoItem(
                     item = todo
                 ) { todo ->
