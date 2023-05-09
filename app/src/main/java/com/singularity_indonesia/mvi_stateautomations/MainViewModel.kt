@@ -6,6 +6,7 @@ import com.singularity_indonesia.mvi_stateautomations.domain.model.Todo
 import com.singularity_indonesia.mvi_stateautomations.domain.model.TodoDisplay
 import com.singularity_indonesia.mvi_stateautomations.domain.payload.GetTodoListPLD
 import com.singularity_indonesia.mvi_stateautomations.util.dataProvider
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -46,6 +47,7 @@ class MainViewModel : ViewModel() {
     val todoListDisplayable: StateFlow<List<TodoDisplay>> by lazy {
         /** real state **/
         val state = MutableStateFlow(listOf<TodoDisplay>())
+        var updaterJob: Job? = null
 
         /** AUTOMATION FUNCTION , EXCLUSIVE STATE LOGIC **/
         suspend fun updateState() {
@@ -97,19 +99,28 @@ class MainViewModel : ViewModel() {
         run {
             viewModelScope.launch {
                 todoListDataProvider.state.collect {
-                    updateState()
+                    updaterJob?.cancel()
+                    updaterJob = launch {
+                        updateState()
+                    }
                 }
             }
 
             viewModelScope.launch {
                 nameFilter.collect {
-                    updateState()
+                    updaterJob?.cancel()
+                    updaterJob = launch {
+                        updateState()
+                    }
                 }
             }
 
             viewModelScope.launch {
                 selectedItem.collect {
-                    updateState()
+                    updaterJob?.cancel()
+                    updaterJob = launch {
+                        updateState()
+                    }
                 }
             }
         }

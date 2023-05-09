@@ -1,6 +1,7 @@
 package com.singularity_indonesia.mvi_stateautomations
 
 import android.os.Bundle
+import android.support.v4.os.IResultReceiver.Default
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -14,13 +15,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.singularity_indonesia.mvi_stateautomations.domain.model.TodoDisplay
 import com.singularity_indonesia.mvi_stateautomations.domain.payload.GetTodoListPLD
 import com.singularity_indonesia.mvi_stateautomations.util.theme.MVIStateAutomationsTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 
 class MainActivity : ComponentActivity() {
 
@@ -48,8 +50,44 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun initData() {
-        vm.todoListDataProvider.update(
-            GetTodoListPLD()
+        startAutoUpdate()
+    }
+
+    /** this function will emulate data update every 5 sec **/
+    private fun startAutoUpdate() {
+        /** job **/
+        var autoUpdateJob: Job? = null
+
+        /** auto refresh logic **/
+        suspend fun updater() {
+            while (true) {
+                vm.todoListDataProvider.update(
+                    GetTodoListPLD()
+                )
+                delay(5000)
+            }
+        }
+
+        /** flow with lifecycle **/
+        lifecycle.addObserver(
+            object : DefaultLifecycleObserver {
+                override fun onResume(
+                    owner: LifecycleOwner
+                ) {
+                    super.onResume(owner)
+                    autoUpdateJob?.cancel()
+                    autoUpdateJob = lifecycleScope.launch {
+                        updater()
+                    }
+                }
+
+                override fun onStop(
+                    owner: LifecycleOwner
+                ) {
+                    autoUpdateJob?.cancel()
+                    super.onStop(owner)
+                }
+            }
         )
     }
 }
@@ -154,6 +192,9 @@ fun TodoItem(
         )
         Text(
             text = todoData.detail
+        )
+        Text(
+            text = "Updated at: ${todoData.lastModifiedTime}"
         )
     }
 }
