@@ -57,3 +57,6 @@ val someState: StateFlow<SomeModel> by lazy {
 ```
 
 ### Author: [stefanus ayudha](https://github.com/stefanusayudha)
+
+### Note:
+Dalam project ini saya menggunakan Jetpack Compose, akan tetapi implementasi tidak terbatas pada UI toolkit.
