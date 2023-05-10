@@ -26,7 +26,7 @@ val someState: StateFlow<SomeModel> by lazy {
 	val realState = MutableStateFlow(defaultValue)
 	
 	/** Exclusive State Logic **/
-	fun updateState() {
+	suspend fun updateState() {
 		
 		... state logic goes here
 		
