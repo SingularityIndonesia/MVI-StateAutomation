@@ -21,6 +21,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.singularity_indonesia.mvi_stateautomations.domain.model.TodoDisplay
 import com.singularity_indonesia.mvi_stateautomations.domain.payload.GetTodoListPLD
+import com.singularity_indonesia.mvi_stateautomations.util.enums.IDFilter
+import com.singularity_indonesia.mvi_stateautomations.util.enums.Sorting
 import com.singularity_indonesia.mvi_stateautomations.util.theme.MVIStateAutomationsTheme
 import kotlinx.coroutines.*
 
@@ -101,10 +103,7 @@ fun MainScreen(
             .fillMaxWidth()
     )
     Search(vm)
-    Spacer(
-        modifier = Modifier.height(16.dp)
-            .fillMaxWidth()
-    )
+    Filter(vm)
     ListView(vm)
 }
 
@@ -127,6 +126,97 @@ fun Search(
             vertical = 0.dp
         )
 )
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun Filter(
+    vm: MainViewModel = viewModel()
+) {
+    Column(
+        modifier = Modifier.padding(
+            horizontal = 16.dp
+        )
+    ) {
+        Row{
+            FilterChip(
+                selected = vm.idFilter.collectAsState().value == IDFilter.EvenOnly,
+                label = { Text("Even ID Only") },
+                onClick = {
+                    if (vm.idFilter.value != IDFilter.EvenOnly)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            vm.idFilter.emit(
+                                IDFilter.EvenOnly
+                            )
+                        }
+                    else
+                        CoroutineScope(Dispatchers.Main).launch {
+                            vm.idFilter.emit(
+                                IDFilter.None
+                            )
+                        }
+                }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            FilterChip(
+                selected = vm.idFilter.collectAsState().value == IDFilter.OddOnly,
+                label = { Text("Odd ID Only") },
+                onClick = {
+                    if (vm.idFilter.value != IDFilter.OddOnly)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            vm.idFilter.emit(
+                                IDFilter.OddOnly
+                            )
+                        }
+                    else
+                        CoroutineScope(Dispatchers.Main).launch {
+                            vm.idFilter.emit(
+                                IDFilter.None
+                            )
+                        }
+                }
+            )
+        }
+        Row{
+            FilterChip(
+                selected = vm.sortingMethod.collectAsState().value == Sorting.NameAsc,
+                label = { Text("Sort Name Ascending") },
+                onClick = {
+                    if (vm.sortingMethod.value != Sorting.NameAsc)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            vm.sortingMethod.emit(
+                                Sorting.NameAsc
+                            )
+                        }
+                    else
+                        CoroutineScope(Dispatchers.Main).launch {
+                            vm.sortingMethod.emit(
+                                Sorting.None
+                            )
+                        }
+                }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            FilterChip(
+                selected = vm.sortingMethod.collectAsState().value == Sorting.NameDsc,
+                label = { Text("Sort Name Descending") },
+                onClick = {
+                    if (vm.sortingMethod.value != Sorting.NameDsc)
+                        CoroutineScope(Dispatchers.Main).launch {
+                            vm.sortingMethod.emit(
+                                Sorting.NameDsc
+                            )
+                        }
+                    else
+                        CoroutineScope(Dispatchers.Main).launch {
+                            vm.sortingMethod.emit(
+                                Sorting.None
+                            )
+                        }
+                }
+            )
+        }
+    }
+}
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable

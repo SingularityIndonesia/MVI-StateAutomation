@@ -6,9 +6,12 @@ import com.singularity_indonesia.mvi_stateautomations.domain.model.Todo
 import com.singularity_indonesia.mvi_stateautomations.domain.model.TodoDisplay
 import com.singularity_indonesia.mvi_stateautomations.domain.payload.GetTodoListPLD
 import com.singularity_indonesia.mvi_stateautomations.util.dataProvider
+import com.singularity_indonesia.mvi_stateautomations.util.enums.IDFilter
+import com.singularity_indonesia.mvi_stateautomations.util.enums.Sorting
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -37,6 +40,12 @@ class MainViewModel : ViewModel() {
     /** ## Name Filter **/
     val nameFilter = MutableStateFlow<String>("")
 
+    /** ## ID Filter **/
+    val idFilter = MutableStateFlow<IDFilter>(IDFilter.None)
+
+    /** ## Sorting **/
+    val sortingMethod = MutableStateFlow<Sorting>(Sorting.None)
+
     /** ## Selected Data **/
     val selectedItem = MutableStateFlow<TodoDisplay?>(null)
 
@@ -54,11 +63,13 @@ class MainViewModel : ViewModel() {
 
             val selected = selectedItem.first()
             val clueFilter = nameFilter.first()
+            val idFilter = idFilter.first()
+            val sorting = sortingMethod.first()
             val data = todoListDataProvider.state.first()
 
             val newData = data
                 /**
-                 * if filter is blank then let everybody join the party,
+                 * if name filter is blank then let everybody join the party,
                  * else name or data contain clue
                  * **/
                 .filter {
@@ -67,6 +78,20 @@ class MainViewModel : ViewModel() {
                     else
                         it.title.contains(clueFilter, true)
                                 || it.detail.contains(clueFilter, true)
+                }
+                /** ID Filter **/
+                .filter {
+                    when (idFilter) {
+                        IDFilter.EvenOnly -> {
+                            it.id.toInt() % 2 == 0
+                        }
+
+                        IDFilter.OddOnly -> {
+                            it.id.toInt() % 2 != 0
+                        }
+
+                        IDFilter.None -> true
+                    }
                 }
                 /**
                  * map item to displayable item
@@ -89,6 +114,20 @@ class MainViewModel : ViewModel() {
                         )
                     else
                         it
+                }
+                /** Sorting **/
+                .let {
+                    when (sorting) {
+                        Sorting.NameAsc -> it.sortedBy { todo ->
+                            todo.parent.invoke().id
+                        }
+
+                        Sorting.NameDsc -> it.sortedBy {todo ->
+                            todo.parent.invoke().id
+                        }.reversed()
+
+                        Sorting.None -> it
+                    }
                 }
 
             /** update current state **/
@@ -117,6 +156,24 @@ class MainViewModel : ViewModel() {
 
             viewModelScope.launch {
                 selectedItem.collect {
+                    updaterJob?.cancel()
+                    updaterJob = launch {
+                        updateState()
+                    }
+                }
+            }
+
+            viewModelScope.launch {
+                idFilter.collect {
+                    updaterJob?.cancel()
+                    updaterJob = launch {
+                        updateState()
+                    }
+                }
+            }
+
+            viewModelScope.launch {
+                sortingMethod.collect {
                     updaterJob?.cancel()
                     updaterJob = launch {
                         updateState()
