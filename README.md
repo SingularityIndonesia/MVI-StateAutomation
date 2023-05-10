@@ -56,6 +56,52 @@ val someState: StateFlow<SomeModel> by lazy {
 }
 ```
 
+Untuk menambahkan flexibility, anda juga bisa menambahkan updaterJob sebagai cancelable job, untuk mendukung interaksi yang lebih cepat.
+```kotlin
+/**
+* State Automation + Exclusive State Logic
+**/
+val someState: StateFlow<SomeModel> by lazy {
+	val realState = MutableStateFlow(defaultValue)
+	var updaterJob: Job? = null
+	
+	/** Exclusive State Logic **/
+	suspend fun updateState() {
+		
+		... state logic goes here
+		
+		CoroutineScope {
+			realState.emit(newState)
+		}
+	}
+
+	/** State Relation
+	* The state sense another state to notify update.
+	**/
+	run {
+		CoroutineScope {
+			anotherState1.collect {
+				updaterJob?.cancel()
+				updaterJob = launch {
+					updateState()
+				}
+			}
+		}
+		
+		CoroutineScope {
+			anotherState2.collect {
+				updaterJob?.cancel()
+				updaterJob = launch {
+					updateState()
+				}
+			}
+		}
+	}
+
+	state // return private state object
+}
+```
+
 ### Author: [stefanus ayudha](https://github.com/stefanusayudha)
 
 ### Note:
