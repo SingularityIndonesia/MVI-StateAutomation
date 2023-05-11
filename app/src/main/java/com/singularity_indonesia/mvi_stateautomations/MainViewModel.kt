@@ -11,7 +11,6 @@ import com.singularity_indonesia.mvi_stateautomations.util.enums.Sorting
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -122,7 +121,7 @@ class MainViewModel : ViewModel() {
                             todo.parent.invoke().id
                         }
 
-                        Sorting.NameDsc -> it.sortedBy {todo ->
+                        Sorting.NameDsc -> it.sortedBy { todo ->
                             todo.parent.invoke().id
                         }.reversed()
 
@@ -135,45 +134,15 @@ class MainViewModel : ViewModel() {
         }
 
         /** state relation sensing **/
-        run {
+        listOf(
+            todoListDataProvider.state,
+            nameFilter,
+            selectedItem,
+            idFilter,
+            sortingMethod
+        ).map {
             viewModelScope.launch {
-                todoListDataProvider.state.collect {
-                    updaterJob?.cancel()
-                    updaterJob = launch {
-                        updateState()
-                    }
-                }
-            }
-
-            viewModelScope.launch {
-                nameFilter.collect {
-                    updaterJob?.cancel()
-                    updaterJob = launch {
-                        updateState()
-                    }
-                }
-            }
-
-            viewModelScope.launch {
-                selectedItem.collect {
-                    updaterJob?.cancel()
-                    updaterJob = launch {
-                        updateState()
-                    }
-                }
-            }
-
-            viewModelScope.launch {
-                idFilter.collect {
-                    updaterJob?.cancel()
-                    updaterJob = launch {
-                        updateState()
-                    }
-                }
-            }
-
-            viewModelScope.launch {
-                sortingMethod.collect {
+                it.collect {
                     updaterJob?.cancel()
                     updaterJob = launch {
                         updateState()
