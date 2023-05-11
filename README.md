@@ -38,19 +38,20 @@ val someState: StateFlow<SomeModel> by lazy {
 	/** State Relation
 	* The state sense another state to notify update.
 	**/
-	run {
-		CoroutineScope {
-			anotherState1.collect {
-				updateState()
-			}
-		}
-		
-		CoroutineScope {
-			anotherState2.collect {
-				updateState()
-			}
-		}
-	}
+        listOf(
+            anotherFlow1,
+            anotherFlow2,
+            ...
+        ).map { flow ->
+            CoroutineScope {
+                flow.collect {
+                    updaterJob?.cancel()
+                    updaterJob = launch {
+                        updateState()
+                    }
+                }
+            }
+        }
 
 	state // return private state object
 }
@@ -78,25 +79,20 @@ val someState: StateFlow<SomeModel> by lazy {
 	/** State Relation
 	* The state sense another state to notify update.
 	**/
-	run {
-		CoroutineScope {
-			anotherState1.collect {
-				updaterJob?.cancel()
-				updaterJob = launch {
-					updateState()
-				}
-			}
-		}
-		
-		CoroutineScope {
-			anotherState2.collect {
-				updaterJob?.cancel()
-				updaterJob = launch {
-					updateState()
-				}
-			}
-		}
-	}
+        listOf(
+            anotherFlow1,
+            anotherFlow2,
+            ...
+        ).map { flow ->
+            CoroutineScope {
+                flow.collect {
+                    updaterJob?.cancel()
+                    updaterJob = launch {
+                        updateState()
+                    }
+                }
+            }
+        }
 
 	state // return private state object
 }
