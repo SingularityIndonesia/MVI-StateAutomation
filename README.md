@@ -98,6 +98,9 @@ val someState: StateFlow<SomeModel> by lazy {
 }
 ```
 
+### Preview
+![Preview](preview.gif)
+
 ### Note:
 Dalam project ini saya menggunakan Jetpack Compose, akan tetapi implementasi tidak terbatas pada UI toolkit.
 
